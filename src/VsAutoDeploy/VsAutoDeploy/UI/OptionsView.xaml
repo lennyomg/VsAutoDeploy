@@ -1,0 +1,112 @@
+﻿<Window x:Class="VsAutoDeploy.OptionsView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:VsAutoDeploy"
+        mc:Ignorable="d" Title="Auto Deploy Configuration" Height="600" Width="800"
+        Background="{x:Static SystemColors.ControlBrush}" TextOptions.TextFormattingMode="Display"
+        d:DataContext="{d:DesignInstance local:OptionsViewModel, IsDesignTimeCreatable=True}"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
+        <local:CountToVisibilityHiddenConverter x:Key="CountToVisibilityHiddenConverter" />
+    </Window.Resources>
+
+    <Grid Margin="5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Target Directory:" Margin="4, 2" VerticalAlignment="Center" HorizontalAlignment="Right" />
+
+        <DockPanel Grid.Row="0" Grid.Column="1" LastChildFill="True">
+            <Button Content="Browse" Margin="0, 5, 5, 5" DockPanel.Dock="Right" MinWidth="75" Click="BrowseButton_Click" />
+            <TextBox x:Name="TargetDirectoryTextBox" Padding="1, 3" Margin="5"
+                    Text="{Binding Path=TargetDirectory, UpdateSourceTrigger=PropertyChanged}" />
+        </DockPanel>
+
+        <Separator Margin="5" Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0" />
+
+        <Grid Grid.Row="3" Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.4*" />
+                <ColumnDefinition Width="0.7*" />
+            </Grid.ColumnDefinitions>
+
+            <ListBox ItemsSource="{Binding Path=Projects}" HorizontalContentAlignment="Stretch" Margin="5"
+                    SelectedItem="{Binding Path=SelectedProject, Mode=TwoWay}"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.RowSpan="2" Margin="0, 2, 2, 2" Width="4" Background="LightSkyBlue"
+                                    Visibility="{Binding Path=Files.Count, Converter={StaticResource CountToVisibilityHiddenConverter}}" />
+
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=Name}" Margin="4, 2" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=FolderName}" Margin="4, 2"
+                                    Opacity="0.5" TextTrimming="CharacterEllipsis" />
+
+                            <TextBlock Grid.RowSpan="2" Grid.Column="2" Text="{Binding Path=Files.Count}"
+                                    VerticalAlignment="Center" FontSize="20" Margin="3, 0, 3, 1"
+                                    Visibility="{Binding Path=Files.Count, Converter={StaticResource CountToVisibilityConverter}}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <DataGrid Grid.Column="1" ItemsSource="{Binding Path=SelectedProject.Files}" AutoGenerateColumns="False"
+                    GridLinesVisibility="None" RowHeight="25" HeadersVisibility="Column" CanUserReorderColumns="False"
+                    CanUserResizeColumns="False" CanUserResizeRows="False" Margin="5">
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="BorderThickness" Value="0" />
+                    </Style>
+                </DataGrid.CellStyle>
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Width="*" Header="Files">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=FileName, FallbackValue='click to add new item'}"
+                                        Margin="4, 2" VerticalAlignment="Center">
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <ComboBox BorderThickness="0, 1" Padding="2, 4" IsEditable="True" StaysOpenOnEdit="True"
+                                        Text="{Binding Path=FileName, Mode=TwoWay}"
+                                        Tag="{Binding Path=DataContext.SelectedProject.OutputPath, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        Loaded="ComboBox_Loaded" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <DockPanel Grid.Row="4" Grid.ColumnSpan="2" Grid.Column="0" LastChildFill="False">
+            <Button DockPanel.Dock="Right" Content="OK" IsDefault="True" Margin="5" MinHeight="25" MinWidth="75"
+                    Click="OkButton_Click" />
+            <Button DockPanel.Dock="Right" Content="Cancel" IsCancel="True" Margin="5" MinHeight="25" MinWidth="75" />
+        </DockPanel>
+    </Grid>
+</Window>
