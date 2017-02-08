@@ -28,9 +28,9 @@ namespace EnvDTE80
         private static IEnumerable<Project> GetSolutionFolderProjects(Project solutionFolder)
         {
             var result = new List<Project>();
-            for (var i = 1; i <= solutionFolder.ProjectItems.Count; i++)
+            foreach (var projectItem in solutionFolder.ProjectItems.OfType<ProjectItem>())
             {
-                var subProject = solutionFolder.ProjectItems.Item(i).SubProject;
+                var subProject = projectItem.SubProject;
                 if (subProject == null)
                     continue;
 
