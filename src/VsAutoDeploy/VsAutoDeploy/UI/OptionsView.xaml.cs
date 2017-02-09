@@ -13,9 +13,6 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using EnvDTE;
-using EnvDTE80;
-using Window = System.Windows.Window;
 
 namespace VsAutoDeploy
 {
@@ -32,32 +29,11 @@ namespace VsAutoDeploy
         }
 
 
-        private void OkButton_Click(object sender, RoutedEventArgs e)
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            viewModel.Apply();
+            viewModel.Save();
             DialogResult = true;
             Close();
-        }
-
-        private void ComboBox_Loaded(object sender, RoutedEventArgs e)
-        {
-            var comboBox = (ComboBox)sender;
-            comboBox.Focus();
-
-            var path = comboBox.Tag as string;
-
-            if (String.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
-            {
-                comboBox.ItemsSource = null;
-                return;
-            }
-
-            var files = Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly)
-                .Select(Path.GetFileName)
-                .OrderBy(p => p)
-                .ToArray();
-
-            comboBox.ItemsSource = files;
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -77,6 +53,82 @@ namespace VsAutoDeploy
 
             if (dialog.ShowDialog() == true)
                 viewModel.TargetDirectory = dialog.SelectedPath;
+        }
+        
+        private void OutputFilesComboBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            var comboBox = (ComboBox)sender;
+            comboBox.Focus();
+
+            var projectViewModel = viewModel.SelectedProject;
+            if (projectViewModel == null)
+                return;
+
+            var path = projectViewModel.OutputFullPath;
+
+            if (String.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+            {
+                comboBox.ItemsSource = null;
+                return;
+            }
+
+            var files = Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly)
+                .OrderByDescending(p => Path.GetFileNameWithoutExtension(path) == projectViewModel.Name)
+                .ThenBy(p => Path.GetFileNameWithoutExtension(path))
+                .ThenBy(p => Path.GetExtension(path))
+                .Select(Path.GetFileName)
+                .OrderBy(p => p)
+                .ToArray();
+
+            comboBox.ItemsSource = files;
+        }
+
+
+        private void ListBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            ((ListBox)sender).ScrollIntoView(viewModel.SelectedProject);
+        }
+
+        private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var removedItems = e.RemovedItems.OfType<OptionsViewModel.ProjectViewModel>();
+            foreach (var item in removedItems)
+                viewModel.SelectedProjects.Remove(item);
+
+            var addedItems = e.AddedItems.OfType<OptionsViewModel.ProjectViewModel>().Except(viewModel.SelectedProjects);
+            foreach (var item in addedItems)
+                viewModel.SelectedProjects.Add(item);
+        }
+
+
+        private void EnableMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            viewModel.Enable(true);
+        }
+
+        private void DisableMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            viewModel.Enable(false);
+        }
+
+        private void IncludeSubDirectoriesMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            viewModel.IncludeSubDirectories(true);
+        }
+
+        private void DontIncludeSubDirectoriesMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            viewModel.IncludeSubDirectories(false);
+        }
+
+        private void AddOutputMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            viewModel.AddOutput();
+        }
+
+        private void ClearMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            viewModel.Clear();
         }
     }
 }

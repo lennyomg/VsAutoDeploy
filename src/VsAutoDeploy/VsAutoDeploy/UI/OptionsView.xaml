@@ -42,12 +42,26 @@
             </Grid.ColumnDefinitions>
 
             <ListBox ItemsSource="{Binding Path=Projects}" HorizontalContentAlignment="Stretch" Margin="5"
-                    SelectedItem="{Binding Path=SelectedProject, Mode=TwoWay}"
-                    ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    SelectedItem="{Binding Path=SelectedProject, Mode=TwoWay}" SelectionMode="Extended"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ListBox_SelectionChanged"
+                    Loaded="ListBox_Loaded">
+                <ListBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Enable selected" Click="EnableMenuItem_Click" />
+                        <MenuItem Header="Disable selected" Click="DisableMenuItem_Click" />
+                        <Separator />
+                        <MenuItem Header="Include sub directories" Click="IncludeSubDirectoriesMenuItem_Click" />
+                        <MenuItem Header="Don't include sub directories" Click="DontIncludeSubDirectoriesMenuItem_Click" />
+                        <Separator />
+                        <MenuItem Header="Add project output to files" Click="AddOutputMenuItem_Click" />
+                        <MenuItem Header="Remove all files" Click="ClearMenuItem_Click" />
+                    </ContextMenu>
+                </ListBox.ContextMenu>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -58,54 +72,71 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <Border Grid.RowSpan="2" Margin="0, 2, 2, 2" Width="4" Background="LightSkyBlue"
+                            <Border x:Name="LeftLine" Grid.RowSpan="2" Margin="0, 2, 2, 2" Width="4"
+                                    Background="SkyBlue"
                                     Visibility="{Binding Path=Files.Count, Converter={StaticResource CountToVisibilityHiddenConverter}}" />
 
-                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=Name}" Margin="4, 2" />
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=FolderName}" Margin="4, 2"
+                            <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Path=Name}" Margin="4, 2" />
+                            <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding Path=FolderName}" Margin="4, 2"
                                     Opacity="0.5" TextTrimming="CharacterEllipsis" />
 
-                            <TextBlock Grid.RowSpan="2" Grid.Column="2" Text="{Binding Path=Files.Count}"
+                            <TextBlock Grid.RowSpan="2" Grid.Column="3" Text="{Binding Path=Files.Count}"
                                     VerticalAlignment="Center" FontSize="20" Margin="3, 0, 3, 1"
                                     Visibility="{Binding Path=Files.Count, Converter={StaticResource CountToVisibilityConverter}}" />
                         </Grid>
+
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsEnabled}" Value="False">
+                                <Setter TargetName="LeftLine" Property="Background" Value="LightGray" />
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
 
-            <DataGrid Grid.Column="1" ItemsSource="{Binding Path=SelectedProject.Files}" AutoGenerateColumns="False"
-                    GridLinesVisibility="None" RowHeight="25" HeadersVisibility="Column" CanUserReorderColumns="False"
-                    CanUserResizeColumns="False" CanUserResizeRows="False" Margin="5">
-                <DataGrid.CellStyle>
-                    <Style TargetType="DataGridCell">
-                        <Setter Property="BorderThickness" Value="0" />
-                    </Style>
-                </DataGrid.CellStyle>
-                <DataGrid.Columns>
-                    <DataGridTemplateColumn Width="*" Header="Files">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Path=FileName, FallbackValue='click to add new item'}"
-                                        Margin="4, 2" VerticalAlignment="Center">
-                                </TextBlock>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                        <DataGridTemplateColumn.CellEditingTemplate>
-                            <DataTemplate>
-                                <ComboBox BorderThickness="0, 1" Padding="2, 4" IsEditable="True" StaysOpenOnEdit="True"
-                                        Text="{Binding Path=FileName, Mode=TwoWay}"
-                                        Tag="{Binding Path=DataContext.SelectedProject.OutputPath, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        Loaded="ComboBox_Loaded" />
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellEditingTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <DataGrid Grid.Row="0" ItemsSource="{Binding Path=SelectedProject.Files}" AutoGenerateColumns="False"
+                        GridLinesVisibility="None" RowHeight="25" HeadersVisibility="Column"
+                        CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserResizeRows="False" Margin="5">
+                    <DataGrid.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="BorderThickness" Value="0" />
+                        </Style>
+                    </DataGrid.CellStyle>
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Width="*" Header="Files">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Path=FileName, FallbackValue='click to add new item'}"
+                                            Margin="4, 2" VerticalAlignment="Center">
+                                    </TextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                            <DataGridTemplateColumn.CellEditingTemplate>
+                                <DataTemplate>
+                                    <ComboBox BorderThickness="0, 1" Padding="2, 4" IsEditable="True"
+                                            StaysOpenOnEdit="True" Text="{Binding Path=FileName, Mode=TwoWay}"
+                                            Tag="{Binding}" Loaded="OutputFilesComboBox_Loaded" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellEditingTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <CheckBox Grid.Row="1" Content="Include subfolders"
+                        IsChecked="{Binding Path=SelectedProject.IncludeSubDirectories, Mode=TwoWay}" Margin="5" />
+            </Grid>
+
         </Grid>
 
         <DockPanel Grid.Row="4" Grid.ColumnSpan="2" Grid.Column="0" LastChildFill="False">
             <Button DockPanel.Dock="Right" Content="OK" IsDefault="True" Margin="5" MinHeight="25" MinWidth="75"
-                    Click="OkButton_Click" />
+                    Click="SaveButton_Click" />
             <Button DockPanel.Dock="Right" Content="Cancel" IsCancel="True" Margin="5" MinHeight="25" MinWidth="75" />
         </DockPanel>
     </Grid>

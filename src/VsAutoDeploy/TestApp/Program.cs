@@ -19,23 +19,23 @@ namespace TestApp
         {
             var projects = new List<Project>();
 
-            projects.Add(CreateProject(@"Company.Project.Assembly1\Company.Project.Assembly1.csproj"));
-            projects.Add(CreateProject(@"Company.Project.Assembly1\Company.Project.Assembly2.csproj"));
-            projects.Add(CreateProject(@"Company.Project.Assembly1\Company.Project.Assembly3.csproj"));
-
             projects.Add(CreateSolutionFolder("UnitTests",
                 CreateProject(@"UnitTests\Company.Project.Assembly1\Company.Project.Assembly1.UnitTests.csproj"),
-                CreateProject(@"UnitTests\Company.Project.Assembly1\Company.Project.Assembly2.UnitTests.csproj"),
-                CreateProject(@"UnitTests\Company.Project.Assembly1\Company.Project.Assembly3.UnitTests.csproj")));
-            
+                CreateProject(@"UnitTests\Company.Project.Assembly2\Company.Project.Assembly2.UnitTests.csproj"),
+                CreateProject(@"UnitTests\Company.Project.Assembly3\Company.Project.Assembly3.UnitTests.csproj")));
+
+            projects.Add(CreateProject(@"Company.Project.Assembly1\Company.Project.Assembly1.csproj"));
+            projects.Add(CreateProject(@"Company.Project.Assembly3\Company.Project.Assembly3.csproj"));
+            projects.Add(CreateProject(@"Company.Project.Assembly2\Company.Project.Assembly2.csproj"));
+
             var configuration = new SolutionConfiguration();
             configuration.TargetDirectory = @"C:\Temp";
             configuration.IsEnabled = true;
             configuration.Projects.Add(CreateProjectConfiguration(@"Company.Project.Assembly1\Company.Project.Assembly1.csproj", true, false));
-            configuration.Projects.Add(CreateProjectConfiguration(@"Company.Project.Assembly1\Company.Project.Assembly3.csproj", false, true));
+            configuration.Projects.Add(CreateProjectConfiguration(@"Company.Project.Assembly3\Company.Project.Assembly3.csproj", false, true));
 
             var dteMock = new Mock<DTE2> { DefaultValue = DefaultValue.Mock };
-            
+
             Mock.Get(dteMock.Object.Solution.Projects)
                 .As<IEnumerable>()
                 .Setup(p => p.GetEnumerator())
@@ -84,7 +84,7 @@ namespace TestApp
                 .As<IEnumerable>()
                 .Setup(p => p.GetEnumerator())
                 .Returns(() => projectItems.GetEnumerator());
-           
+
             return projectMock.Object;
         }
 

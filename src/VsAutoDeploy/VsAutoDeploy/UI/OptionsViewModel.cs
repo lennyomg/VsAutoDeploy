@@ -8,7 +8,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using EnvDTE;
 using EnvDTE80;
+using Newtonsoft.Json;
 
 namespace VsAutoDeploy
 {
@@ -34,21 +36,26 @@ namespace VsAutoDeploy
 
             var p1 = new ProjectViewModel();
             p1.Name = "proj1";
+            p1.IsEnabled = true;
             p1.FolderName = "common";
             p1.Files.Add(new ProjectFileViewModel { FileName = "file1" });
             p1.Files.Add(new ProjectFileViewModel { FileName = "file2" });
             p1.Files.Add(new ProjectFileViewModel { FileName = "file3" });
-            p1.OutputPath = "C:\\Windows";
+            p1.OutputFullPath = "C:\\Windows";
 
             var p2 = new ProjectViewModel();
             p2.Name = "proj2";
+            p2.IsEnabled = false;
             p1.FolderName = "common/lib";
             p2.Files.Add(new ProjectFileViewModel { FileName = "file4" });
             p2.Files.Add(new ProjectFileViewModel { FileName = "file5" });
             p2.Files.Add(new ProjectFileViewModel { FileName = "file6" });
 
-            var p3 = new ProjectViewModel("proj3", new string[0]);
-            p3.OutputPath = "C:\\Windows";
+            var p3 = new ProjectViewModel();
+            p2.Name = "proj3";
+            p2.IsEnabled = true;
+            p1.FolderName = "common";
+            p3.OutputFullPath = "C:\\Windows";
 
             Projects = new Collection<ProjectViewModel>();
             Projects.Add(p1);
@@ -101,21 +108,31 @@ namespace VsAutoDeploy
 
         #endregion
 
+        #region SelectedProjects Property
+        
+        public ICollection<ProjectViewModel> SelectedProjects { get; private set; }
+
+        #endregion
+
         #region Projects Property
 
         public ICollection<ProjectViewModel> Projects { get; private set; }
 
         #endregion
-        
+
 
         private readonly SolutionConfiguration solutionConfiguration;
-        
+
         public OptionsViewModel(DTE2 dte, SolutionConfiguration solutionConfiguration)
         {
             this.solutionConfiguration = solutionConfiguration;
 
             var projects = new List<ProjectViewModel>();
-            var dteProjects = dte.Solution.GetProjects().OrderBy(p => p.UniqueName).ToArray();
+            var dteProjects = dte.Solution.GetProjects()
+                .OrderBy(p => Path.GetDirectoryName(p.UniqueName))
+                .ThenBy(p => p.UniqueName)
+                .ToArray();
+
             foreach (var dteProject in dteProjects)
             {
                 try
@@ -123,11 +140,10 @@ namespace VsAutoDeploy
                     var projectConfiguration = solutionConfiguration.Projects.FirstOrDefault(p => p.ProjectName == dteProject.UniqueName);
                     if (projectConfiguration == null)
                         projectConfiguration = new ProjectConfiguration();
-                    
-                    var projectViewModel = new ProjectViewModel(dteProject.UniqueName, projectConfiguration.Files);
+
+                    var projectViewModel = new ProjectViewModel(dteProject, projectConfiguration.Files);
                     projectViewModel.IsEnabled = projectConfiguration.IsEnabled;
                     projectViewModel.IncludeSubDirectories = projectConfiguration.IncludeSubDirectories;
-                    projectViewModel.OutputPath = Path.Combine(Path.GetDirectoryName(dteProject.FullName), (string)dteProject.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value); ;
                     projects.Add(projectViewModel);
                 }
                 catch
@@ -135,23 +151,53 @@ namespace VsAutoDeploy
                 }
             }
 
-            Projects = projects.OrderBy(p => p.Name).ToArray();
+            Projects = projects;
             TargetDirectory = solutionConfiguration.TargetDirectory;
+            SelectedProjects = new ObservableCollection<ProjectViewModel>();
 
             var startupProjects = dte.Solution.SolutionBuild.StartupProjects as object[];
             if (startupProjects != null)
             {
                 var startupProject = startupProjects.OfType<string>().FirstOrDefault();
                 if (startupProject != null)
-                    SelectedProject = Projects.FirstOrDefault(p => p.ProjectName == startupProject);
+                    SelectedProject = Projects.FirstOrDefault(p => p.Project.UniqueName == startupProject);
             }
 
             if (SelectedProject == null)
                 SelectedProject = Projects.FirstOrDefault();
         }
+        
+    
+        public void Enable(bool isEnabled)
+        {
+            foreach (var projectViewModel in SelectedProjects)
+                projectViewModel.IsEnabled = isEnabled;
+        }
 
+        public void IncludeSubDirectories(bool include)
+        {
+            foreach (var projectViewModel in SelectedProjects)
+                projectViewModel.IncludeSubDirectories = include;
+        }
 
-        public void Apply()
+        public void AddOutput()
+        {
+            foreach (var item in SelectedProjects)
+            {
+                var files = Directory.GetFiles(item.OutputFullPath, $"{item.Name}.*", SearchOption.TopDirectoryOnly);
+                foreach (var fileName in files)
+                    item.Files.Add(new ProjectFileViewModel(fileName));
+            }
+        }
+
+        public void Clear()
+        {
+            foreach (var projectViewModel in SelectedProjects)
+                projectViewModel.Files.Clear();
+        }
+        
+
+        public void Save()
         {
             solutionConfiguration.TargetDirectory = TargetDirectory;
             solutionConfiguration.Projects.Clear();
@@ -160,7 +206,7 @@ namespace VsAutoDeploy
             {
                 var projectConfiguration = new ProjectConfiguration();
                 projectConfiguration.IsEnabled = projectViewModel.IsEnabled;
-                projectConfiguration.ProjectName = projectViewModel.ProjectName;
+                projectConfiguration.ProjectName = projectViewModel.Project.UniqueName;
                 projectConfiguration.IncludeSubDirectories = projectViewModel.IncludeSubDirectories;
 
                 foreach (var projectFileViewModel in projectViewModel.Files)
@@ -171,33 +217,79 @@ namespace VsAutoDeploy
         }
         
 
-        public class ProjectViewModel
+        public class ProjectViewModel: INotifyPropertyChanged
         {
-            public string Name { get; set; }
+            #region INotifyPropertyChanged
 
-            public bool IsEnabled { get; set; }
+            public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
-            public string FolderName { get; set; }
+            private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
 
-            public string ProjectName { get; }
+            #endregion
+            
+            #region IsEnabled Property
 
-            public bool IncludeSubDirectories { get; set; }
+            private bool _isEnabled;
 
+            public bool IsEnabled
+            {
+                get { return _isEnabled; }
+                set
+                {
+                    if (_isEnabled == value)
+                        return;
+
+                    _isEnabled = value;
+                    OnPropertyChanged();
+                }
+            }
+
+            #endregion
+            
+            #region IncludeSubDirectories Property
+
+            private bool _includeSubDirectories;
+
+            public bool IncludeSubDirectories
+            {
+                get { return _includeSubDirectories; }
+                set
+                {
+                    if (_includeSubDirectories == value)
+                        return;
+
+                    _includeSubDirectories = value;
+                    OnPropertyChanged();
+                }
+            }
+
+            #endregion
+
+
+            public string Name { get; internal set; }
+
+            public string FolderName { get; internal set; }
+
+            public string OutputFullPath { get; internal set; }
+            
             public ObservableCollection<ProjectFileViewModel> Files { get; }
-
-            public string OutputPath { get; set; }
-
+            
+            internal Project Project { get; }
 
             public ProjectViewModel()
             {
                 Files = new ObservableCollection<ProjectFileViewModel>();
             }
 
-            public ProjectViewModel(string projectName, IEnumerable<string> files)
+            public ProjectViewModel(Project project, IEnumerable<string> files)
             {
-                ProjectName = projectName;
-                Name = Path.GetFileNameWithoutExtension(projectName);
-                FolderName = Path.GetDirectoryName(projectName);
+                Project = project;
+                Name = Path.GetFileNameWithoutExtension(project.UniqueName);
+                FolderName = Path.GetDirectoryName(project.UniqueName);
+                OutputFullPath = Path.Combine(Path.GetDirectoryName(project.FullName), (string)project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value); ;
                 Files = new ObservableCollection<ProjectFileViewModel>(files.Select(p => new ProjectFileViewModel(p)).ToList());
             }
         }
