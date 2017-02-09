@@ -59,7 +59,7 @@
                 </ListBox.ContextMenu>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid>
+                        <Grid x:Name="TemplateRoot">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
@@ -78,7 +78,7 @@
 
                             <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Path=Name}" Margin="4, 2" />
                             <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding Path=FolderName}" Margin="4, 2"
-                                    Opacity="0.5" TextTrimming="CharacterEllipsis" />
+                                   Foreground="DarkGray" TextTrimming="CharacterEllipsis" />
 
                             <TextBlock Grid.RowSpan="2" Grid.Column="3" Text="{Binding Path=Files.Count}"
                                     VerticalAlignment="Center" FontSize="20" Margin="3, 0, 3, 1"
@@ -88,6 +88,7 @@
                         <DataTemplate.Triggers>
                             <DataTrigger Binding="{Binding Path=IsEnabled}" Value="False">
                                 <Setter TargetName="LeftLine" Property="Background" Value="LightGray" />
+                                <Setter TargetName="TemplateRoot" Property="TextElement.Foreground" Value="Gray" />
                             </DataTrigger>
                         </DataTemplate.Triggers>
                     </DataTemplate>
