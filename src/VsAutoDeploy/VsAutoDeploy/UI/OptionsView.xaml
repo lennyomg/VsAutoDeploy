@@ -37,8 +37,8 @@
 
         <Grid Grid.Row="3" Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0.4*" />
-                <ColumnDefinition Width="0.7*" />
+                <ColumnDefinition Width="0.4*" MinWidth="100" />
+                <ColumnDefinition Width="0.7*" MinWidth="200" />
             </Grid.ColumnDefinitions>
 
             <ListBox ItemsSource="{Binding Path=Projects}" HorizontalContentAlignment="Stretch" Margin="5"
@@ -93,6 +93,8 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
+            
+            <GridSplitter Width="5" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Right" />
 
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
