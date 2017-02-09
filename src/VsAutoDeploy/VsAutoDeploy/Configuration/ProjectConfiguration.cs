@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Xml.Serialization;
 
 namespace VsAutoDeploy
 {
     public class ProjectConfiguration
     {
+        [DefaultValue(true)]
         public bool IsEnabled { get; set; } = true;
 
         public string ProjectName { get; set; }
