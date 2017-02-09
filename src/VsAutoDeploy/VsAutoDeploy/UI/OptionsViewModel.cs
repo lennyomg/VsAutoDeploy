@@ -186,7 +186,7 @@ namespace VsAutoDeploy
             {
                 var files = Directory.GetFiles(item.OutputFullPath, $"{item.Name}.*", SearchOption.TopDirectoryOnly);
                 foreach (var fileName in files)
-                    item.Files.Add(new ProjectFileViewModel(fileName));
+                    item.Files.Add(new ProjectFileViewModel(Path.GetFileName(fileName)));
             }
         }
 

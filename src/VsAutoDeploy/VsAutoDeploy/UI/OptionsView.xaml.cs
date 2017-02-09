@@ -73,11 +73,9 @@ namespace VsAutoDeploy
             }
 
             var files = Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly)
-                .OrderByDescending(p => Path.GetFileNameWithoutExtension(path) == projectViewModel.Name)
-                .ThenBy(p => Path.GetFileNameWithoutExtension(path))
-                .ThenBy(p => Path.GetExtension(path))
                 .Select(Path.GetFileName)
-                .OrderBy(p => p)
+                .OrderByDescending(p => p.StartsWith(projectViewModel.Name))
+                .ThenBy(Path.GetFileNameWithoutExtension)
                 .ToArray();
 
             comboBox.ItemsSource = files;
