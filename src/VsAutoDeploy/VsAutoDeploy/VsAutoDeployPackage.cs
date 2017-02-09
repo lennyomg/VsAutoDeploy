@@ -53,7 +53,7 @@ namespace VsAutoDeploy
         private SolutionConfiguration configuration;
 
         private vsBuildAction currentBuildAction;
-        
+
 
         protected override void Initialize()
         {
@@ -164,6 +164,10 @@ namespace VsAutoDeploy
             var outputPath = (string)project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value;
             var sourceDirectory = Path.Combine(Path.GetDirectoryName(project.FullName), outputPath);
 
+            var statusBar = (IVsStatusbar)GetService(typeof(SVsStatusbar));
+            uint cookie = 0;
+            object icon = (short)Microsoft.VisualStudio.Shell.Interop.Constants.SBAI_Deploy;
+           
             try
             {
                 var files = projectConfiguration.Files
@@ -179,8 +183,12 @@ namespace VsAutoDeploy
 
                 WriteLine($"====={projectName}=====");
 
-                foreach (var sourceFileName in files)
+                statusBar.Animation(1, ref icon);
+
+                for (uint i = 0; i < files.Length; i++)
                 {
+                    var sourceFileName = files[i];
+
                     try
                     {
                         var fileInfo = new FileInfo(sourceFileName);
@@ -191,9 +199,11 @@ namespace VsAutoDeploy
                             if (configuration.FilesCache.TryGetValue(fileInfo.Name, out lastDate) && fileInfo.LastWriteTime == lastDate)
                                 continue;
                         }
-                        
+
                         var destFileName = Path.Combine(configuration.TargetDirectory, sourceFileName.Substring(sourceDirectory.Length));
                         Write(sourceFileName + " -> ");
+                        
+                        statusBar.Progress(ref cookie, 1, "", i, (uint)files.Length);
 
                         var destPath = Path.GetDirectoryName(destFileName);
                         if (!Directory.Exists(destPath))
@@ -216,11 +226,17 @@ namespace VsAutoDeploy
             }
             catch (Exception ex)
             {
-                outputPane.Activate();
                 WriteLine($"====={projectName}=====");
                 WriteLine(ex.Message);
                 WriteLine($"====={projectName}=====");
                 WriteLine("");
+
+                outputPane.Activate();
+            }
+            finally
+            {
+                statusBar.Animation(0, ref icon);
+                statusBar.Progress(ref cookie, 0, "", 0, 0);
             }
         }
 
