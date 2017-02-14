@@ -119,9 +119,15 @@ namespace VsAutoDeploy
             viewModel.IncludeSubDirectories(false);
         }
 
-        private void AddOutputMenuItem_Click(object sender, RoutedEventArgs e)
+        private void AddOutputExeDllMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            viewModel.AddOutput();
+            viewModel.AddOutput(".exe");
+            viewModel.AddOutput(".dll");
+        }
+
+        private void AddOutputPdbMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            viewModel.AddOutput(".pdb");
         }
 
         private void ClearMenuItem_Click(object sender, RoutedEventArgs e)

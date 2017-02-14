@@ -110,13 +110,13 @@ namespace VsAutoDeploy
 
         #region SelectedProjects Property
         
-        public ICollection<ProjectViewModel> SelectedProjects { get; private set; }
+        public ICollection<ProjectViewModel> SelectedProjects { get; }
 
         #endregion
 
         #region Projects Property
 
-        public ICollection<ProjectViewModel> Projects { get; private set; }
+        public ICollection<ProjectViewModel> Projects { get; }
 
         #endregion
 
@@ -180,13 +180,19 @@ namespace VsAutoDeploy
                 projectViewModel.IncludeSubDirectories = include;
         }
 
-        public void AddOutput()
+        public void AddOutput(string fileExtension)
         {
             foreach (var item in SelectedProjects)
             {
-                var files = Directory.GetFiles(item.OutputFullPath, $"{item.Name}.*", SearchOption.TopDirectoryOnly);
-                foreach (var fileName in files)
-                    item.Files.Add(new ProjectFileViewModel(Path.GetFileName(fileName)));
+                var targetFileName = item.Name + fileExtension;
+
+                if (!File.Exists(Path.Combine(item.OutputFullPath, targetFileName)))
+                    continue;
+
+                if (item.Files.Any(p => String.Equals(p.FileName, targetFileName, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
+                item.Files.Add(new ProjectFileViewModel(targetFileName));
             }
         }
 

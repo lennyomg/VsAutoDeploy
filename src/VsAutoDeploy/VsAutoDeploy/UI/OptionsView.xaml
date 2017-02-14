@@ -35,7 +35,7 @@
 
         <Separator Margin="5" Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0" />
 
-        <Grid Grid.Row="3" Grid.ColumnSpan="2">
+        <Grid Grid.Row="3" Grid.ColumnSpan="2" Grid.Column="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="0.4*" MinWidth="100" />
                 <ColumnDefinition Width="0.7*" MinWidth="200" />
@@ -53,7 +53,8 @@
                         <MenuItem Header="Include sub directories" Click="IncludeSubDirectoriesMenuItem_Click" />
                         <MenuItem Header="Don't include sub directories" Click="DontIncludeSubDirectoriesMenuItem_Click" />
                         <Separator />
-                        <MenuItem Header="Add project output to files" Click="AddOutputMenuItem_Click" />
+                        <MenuItem Header="Add output file" Click="AddOutputExeDllMenuItem_Click" />
+                        <MenuItem Header="Add pdb file" Click="AddOutputPdbMenuItem_Click" />
                         <MenuItem Header="Remove all files" Click="ClearMenuItem_Click" />
                     </ContextMenu>
                 </ListBox.ContextMenu>
@@ -78,9 +79,9 @@
 
                             <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Path=Name}" Margin="4, 2" />
                             <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding Path=FolderName}" Margin="4, 2"
-                                   Foreground="DarkGray" TextTrimming="CharacterEllipsis" />
+                                    Foreground="DarkGray" TextTrimming="CharacterEllipsis" />
 
-                            <TextBlock Grid.RowSpan="2" Grid.Column="3" Text="{Binding Path=Files.Count}"
+                            <TextBlock Grid.Row="0" Grid.RowSpan="2" Grid.Column="3" Text="{Binding Path=Files.Count}"
                                     VerticalAlignment="Center" FontSize="20" Margin="3, 0, 3, 1"
                                     Visibility="{Binding Path=Files.Count, Converter={StaticResource CountToVisibilityConverter}}" />
                         </Grid>
@@ -94,7 +95,7 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            
+
             <GridSplitter Width="5" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Right" />
 
             <Grid Grid.Column="1">
