@@ -16,5 +16,7 @@ namespace VsAutoDeploy
         public List<string> Files { get; private set; } = new List<string>();
 
         public bool IncludeSubDirectories { get; set; }
+
+        public string TargetDirectory { get; set; }
     }
 }

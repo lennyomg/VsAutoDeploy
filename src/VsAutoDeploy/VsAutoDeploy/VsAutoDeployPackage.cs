@@ -149,7 +149,7 @@ namespace VsAutoDeploy
 
         private void BuildEvents_OnBuildProjConfigDone(string projectName, string projectConfig, string platform, string solutionConfig, bool success)
         {
-            if (!success || configuration == null || !configuration.IsEnabled || String.IsNullOrEmpty(configuration.TargetDirectory))
+            if (!success || configuration == null || !configuration.IsEnabled)
                 return;
 
             if (currentBuildAction != vsBuildAction.vsBuildActionBuild && currentBuildAction != vsBuildAction.vsBuildActionRebuildAll)
@@ -157,6 +157,13 @@ namespace VsAutoDeploy
 
             var projectConfiguration = configuration.Projects.FirstOrDefault(p => p.ProjectName == projectName && p.IsEnabled);
             if (projectConfiguration == null || projectConfiguration.Files.Count == 0)
+                return;
+
+            var targetDirectory = !String.IsNullOrEmpty(projectConfiguration.TargetDirectory)
+                ? projectConfiguration.TargetDirectory
+                : configuration.TargetDirectory;
+
+            if (String.IsNullOrEmpty(targetDirectory))
                 return;
 
             var project = dte.Solution.GetProjects().FirstOrDefault(p => p.UniqueName == projectConfiguration.ProjectName);
@@ -167,7 +174,7 @@ namespace VsAutoDeploy
             var statusBar = (IVsStatusbar)GetService(typeof(SVsStatusbar));
             uint cookie = 0;
             object icon = (short)Microsoft.VisualStudio.Shell.Interop.Constants.SBAI_Deploy;
-           
+
             try
             {
                 var files = projectConfiguration.Files
@@ -200,9 +207,9 @@ namespace VsAutoDeploy
                                 continue;
                         }
 
-                        var destFileName = Path.Combine(configuration.TargetDirectory, sourceFileName.Substring(sourceDirectory.Length));
+                        var destFileName = Path.Combine(targetDirectory, sourceFileName.Substring(sourceDirectory.Length));
                         Write(sourceFileName + " -> ");
-                        
+
                         statusBar.Progress(ref cookie, 1, "", i, (uint)files.Length);
 
                         var destPath = Path.GetDirectoryName(destFileName);

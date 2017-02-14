@@ -38,13 +38,16 @@ namespace VsAutoDeploy
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
+            var textBox = (TextBox)((Button)sender).Tag;
+
             var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
             dialog.ShowNewFolderButton = false;
 
             try
             {
-                if (!String.IsNullOrEmpty(viewModel.TargetDirectory) && Directory.Exists(viewModel.TargetDirectory))
-                    dialog.SelectedPath = viewModel.TargetDirectory;
+                var path = textBox.Text;
+                if (!String.IsNullOrEmpty(path) && Directory.Exists(path))
+                    dialog.SelectedPath = path;
             }
             catch
             {
@@ -52,7 +55,7 @@ namespace VsAutoDeploy
             }
 
             if (dialog.ShowDialog() == true)
-                viewModel.TargetDirectory = dialog.SelectedPath;
+                textBox.Text = dialog.SelectedPath;
         }
         
         private void OutputFilesComboBox_Loaded(object sender, RoutedEventArgs e)
@@ -130,9 +133,14 @@ namespace VsAutoDeploy
             viewModel.AddOutput(".pdb");
         }
 
-        private void ClearMenuItem_Click(object sender, RoutedEventArgs e)
+        private void ClearFilesMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            viewModel.Clear();
+            viewModel.ClearFiles();
+        }
+        
+        private void ClearTargetDirectoryMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            viewModel.ClearTargetDirectory();
         }
     }
 }

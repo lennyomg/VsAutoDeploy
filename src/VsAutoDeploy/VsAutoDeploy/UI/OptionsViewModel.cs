@@ -42,6 +42,7 @@ namespace VsAutoDeploy
             p1.Files.Add(new ProjectFileViewModel { FileName = "file2" });
             p1.Files.Add(new ProjectFileViewModel { FileName = "file3" });
             p1.OutputFullPath = "C:\\Windows";
+            p1.TargetDirectory = "C:\\Temp";
 
             var p2 = new ProjectViewModel();
             p2.Name = "proj2";
@@ -144,6 +145,7 @@ namespace VsAutoDeploy
                     var projectViewModel = new ProjectViewModel(dteProject, projectConfiguration.Files);
                     projectViewModel.IsEnabled = projectConfiguration.IsEnabled;
                     projectViewModel.IncludeSubDirectories = projectConfiguration.IncludeSubDirectories;
+                    projectViewModel.TargetDirectory = projectConfiguration.TargetDirectory;
                     projects.Add(projectViewModel);
                 }
                 catch
@@ -196,12 +198,18 @@ namespace VsAutoDeploy
             }
         }
 
-        public void Clear()
+        public void ClearFiles()
         {
             foreach (var projectViewModel in SelectedProjects)
                 projectViewModel.Files.Clear();
         }
-        
+
+        public void ClearTargetDirectory()
+        {
+            foreach (var item in SelectedProjects)
+                item.TargetDirectory = null;
+        }
+
 
         public void Save()
         {
@@ -214,6 +222,7 @@ namespace VsAutoDeploy
                 projectConfiguration.IsEnabled = projectViewModel.IsEnabled;
                 projectConfiguration.ProjectName = projectViewModel.Project.UniqueName;
                 projectConfiguration.IncludeSubDirectories = projectViewModel.IncludeSubDirectories;
+                projectConfiguration.TargetDirectory = projectViewModel.TargetDirectory;
 
                 foreach (var projectFileViewModel in projectViewModel.Files)
                     projectConfiguration.Files.Add(projectFileViewModel.FileName);
@@ -268,6 +277,25 @@ namespace VsAutoDeploy
                         return;
 
                     _includeSubDirectories = value;
+                    OnPropertyChanged();
+                }
+            }
+
+            #endregion
+
+            #region TargetDirectory Property
+
+            private string _targetDirectory;
+
+            public string TargetDirectory
+            {
+                get { return _targetDirectory; }
+                set
+                {
+                    if (_targetDirectory == value)
+                        return;
+
+                    _targetDirectory = value;
                     OnPropertyChanged();
                 }
             }

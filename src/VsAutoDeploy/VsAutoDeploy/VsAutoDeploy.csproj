@@ -163,8 +163,7 @@
     <Compile Include="Configuration\ProjectConfiguration.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="DteHelpers.cs" />
-    <Compile Include="UI\CountToVisibilityConverter.cs" />
-    <Compile Include="UI\CountToVisibilityHiddenConverter.cs" />
+    <Compile Include="UI\CountToBoolConverter.cs" />
     <Compile Include="UI\OptionsViewModel.cs" />
     <Compile Include="UI\OptionsView.xaml.cs">
       <DependentUpon>OptionsView.xaml</DependentUpon>
@@ -174,6 +173,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="UI\StringToBoolConverter.cs" />
     <Compile Include="VsAutoDeployPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PkgCmdIDList.cs" />

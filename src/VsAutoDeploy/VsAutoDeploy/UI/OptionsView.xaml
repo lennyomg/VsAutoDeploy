@@ -8,8 +8,8 @@
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
-        <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
-        <local:CountToVisibilityHiddenConverter x:Key="CountToVisibilityHiddenConverter" />
+        <local:CountToBoolConverter x:Key="CountToBoolConverter" />
+        <local:StringToBoolConverter x:Key="StringToBoolConverter" />
     </Window.Resources>
 
     <Grid Margin="5">
@@ -25,13 +25,16 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Target Directory:" Margin="4, 2" VerticalAlignment="Center" HorizontalAlignment="Right" />
+        <TextBlock Text="Default target directory:" Margin="4, 2" VerticalAlignment="Center" HorizontalAlignment="Right" />
 
-        <DockPanel Grid.Row="0" Grid.Column="1" LastChildFill="True">
-            <Button Content="Browse" Margin="0, 5, 5, 5" DockPanel.Dock="Right" MinWidth="75" Click="BrowseButton_Click" />
-            <TextBox x:Name="TargetDirectoryTextBox" Padding="1, 3" Margin="5"
+        <Grid Grid.Row="0" Grid.Column="1" Margin="5">
+            <TextBox x:Name="DefaultTargetDirectoryTextBox" Padding="1, 3, 20, 3"
                     Text="{Binding Path=TargetDirectory, UpdateSourceTrigger=PropertyChanged}" />
-        </DockPanel>
+            <Button Content="..." ToolTip="Browse" Margin="2" DockPanel.Dock="Right"
+                    Width="{Binding Path=ActualHeight, RelativeSource={RelativeSource Self}}" BorderThickness="0"
+                    Background="Transparent" HorizontalAlignment="Right"
+                    Tag="{Binding ElementName=DefaultTargetDirectoryTextBox}" Click="BrowseButton_Click" />
+        </Grid>
 
         <Separator Margin="5" Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0" />
 
@@ -55,7 +58,9 @@
                         <Separator />
                         <MenuItem Header="Add output file" Click="AddOutputExeDllMenuItem_Click" />
                         <MenuItem Header="Add pdb file" Click="AddOutputPdbMenuItem_Click" />
-                        <MenuItem Header="Remove all files" Click="ClearMenuItem_Click" />
+                        <MenuItem Header="Remove all files" Click="ClearFilesMenuItem_Click" />
+                        <Separator />
+                        <MenuItem Header="Clear target directory" Click="ClearTargetDirectoryMenuItem_Click" />
                     </ContextMenu>
                 </ListBox.ContextMenu>
                 <ListBox.ItemTemplate>
@@ -74,23 +79,43 @@
                             </Grid.RowDefinitions>
 
                             <Border x:Name="LeftLine" Grid.RowSpan="2" Margin="0, 2, 2, 2" Width="4"
-                                    Background="SkyBlue"
-                                    Visibility="{Binding Path=Files.Count, Converter={StaticResource CountToVisibilityHiddenConverter}}" />
+                                    Background="Transparent" />
 
                             <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Path=Name}" Margin="4, 2" />
                             <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding Path=FolderName}" Margin="4, 2"
                                     Foreground="DarkGray" TextTrimming="CharacterEllipsis" />
 
-                            <TextBlock Grid.Row="0" Grid.RowSpan="2" Grid.Column="3" Text="{Binding Path=Files.Count}"
-                                    VerticalAlignment="Center" FontSize="20" Margin="3, 0, 3, 1"
-                                    Visibility="{Binding Path=Files.Count, Converter={StaticResource CountToVisibilityConverter}}" />
+                            <TextBlock x:Name="CountText" Grid.Row="0" Grid.RowSpan="2" Grid.Column="3"
+                                    Text="{Binding Path=Files.Count}" VerticalAlignment="Center" FontSize="20"
+                                    Margin="3, 0, 3, 1" Visibility="Hidden" />
                         </Grid>
 
                         <DataTemplate.Triggers>
+                            <DataTrigger
+                                    Binding="{Binding Path=Files.Count, Converter={StaticResource CountToBoolConverter}}"
+                                    Value="True">
+                                <Setter TargetName="LeftLine" Property="Background" Value="SkyBlue" />
+                                <Setter TargetName="CountText" Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition
+                                            Binding="{Binding Path=Files.Count, Converter={StaticResource CountToBoolConverter}}"
+                                            Value="True" />
+                                    <Condition
+                                            Binding="{Binding Path=TargetDirectory, Converter={StaticResource StringToBoolConverter}}"
+                                            Value="True" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="LeftLine" Property="Background" Value="SlateBlue" />
+                                <Setter TargetName="CountText" Property="Visibility" Value="Visible" />
+                            </MultiDataTrigger>
+
                             <DataTrigger Binding="{Binding Path=IsEnabled}" Value="False">
                                 <Setter TargetName="LeftLine" Property="Background" Value="LightGray" />
                                 <Setter TargetName="TemplateRoot" Property="TextElement.Foreground" Value="Gray" />
                             </DataTrigger>
+
                         </DataTemplate.Triggers>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
@@ -101,6 +126,8 @@
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
@@ -132,7 +159,19 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <CheckBox Grid.Row="1" Content="Include subfolders"
+                <TextBlock Grid.Row="1" Text="Custom target directory:" Margin="4, 2" VerticalAlignment="Center"
+                        DockPanel.Dock="Left" />
+
+                <Grid Grid.Row="2" Margin="5">
+                    <TextBox x:Name="ProjectTargetDirectoryTextBox" Padding="1, 3, 20, 3"
+                            Text="{Binding Path=SelectedProject.TargetDirectory, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Content="..." ToolTip="Browse" Margin="2" DockPanel.Dock="Right"
+                            Width="{Binding Path=ActualHeight, RelativeSource={RelativeSource Self}}"
+                            BorderThickness="0" Background="Transparent" HorizontalAlignment="Right"
+                            Tag="{Binding ElementName=ProjectTargetDirectoryTextBox}" Click="BrowseButton_Click" />
+                </Grid>
+
+                <CheckBox Grid.Row="3" Content="Include subfolders"
                         IsChecked="{Binding Path=SelectedProject.IncludeSubDirectories, Mode=TwoWay}" Margin="5" />
             </Grid>
 
