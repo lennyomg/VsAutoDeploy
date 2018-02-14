@@ -166,6 +166,8 @@ namespace VsAutoDeploy
             if (String.IsNullOrEmpty(targetDirectory))
                 return;
 
+            targetDirectory = Environment.ExpandEnvironmentVariables(targetDirectory);
+
             var project = dte.Solution.GetProjects().FirstOrDefault(p => p.UniqueName == projectConfiguration.ProjectName);
 
             var outputPath = (string)project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value;
@@ -179,6 +181,7 @@ namespace VsAutoDeploy
             {
                 var files = projectConfiguration.Files
                     .Where(p => !String.IsNullOrWhiteSpace(p))
+                    .Select(Environment.ExpandEnvironmentVariables)
                     .SelectMany(p => Directory.GetFiles(sourceDirectory, p, projectConfiguration.IncludeSubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
                     .Distinct()
                     .OrderBy(p => p)
