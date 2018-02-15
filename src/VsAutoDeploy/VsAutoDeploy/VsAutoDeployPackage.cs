@@ -44,6 +44,8 @@ namespace VsAutoDeploy
 
         private OutputWindowPane outputPane;
 
+        private ErrorListProvider errorListProvider;
+
 
         private MenuCommand enabledMenuItem;
 
@@ -61,6 +63,7 @@ namespace VsAutoDeploy
 
             dte = (DTE2)GetService(typeof(DTE));
             outputPane = dte.ToolWindows.OutputWindow.OutputWindowPanes.Add("Auto Deploy");
+            errorListProvider = new ErrorListProvider(this);
 
             solutionEvents = dte.Events.SolutionEvents;
             solutionEvents.Opened += SolutionEvents_Opened;
@@ -145,6 +148,7 @@ namespace VsAutoDeploy
         {
             currentBuildAction = action;
             outputPane.Clear();
+            errorListProvider.Tasks.Clear();
         }
 
         private void BuildEvents_OnBuildProjConfigDone(string projectName, string projectConfig, string platform, string solutionConfig, bool success)
@@ -228,6 +232,19 @@ namespace VsAutoDeploy
                     {
                         WriteLine(ex.Message);
                         outputPane.Activate();
+                        
+                        var error = new ErrorTask();
+                        error.ErrorCategory = TaskErrorCategory.Error;
+                        error.Category = TaskCategory.Misc;
+                        error.Text = ex.Message;
+                        error.Document = Path.GetFileName(sourceFileName);
+
+                        if (GetService(typeof(SVsSolution)) is IVsSolution solution && solution.GetProjectOfUniqueName(project.FileName, out var hierarchyItem) == 0)
+                            error.HierarchyItem = hierarchyItem;
+
+                        errorListProvider.Tasks.Add(error);
+
+                        dte.ExecuteCommand("View.ErrorList");
                     }
                 }
 
