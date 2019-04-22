@@ -18,9 +18,7 @@ namespace VsAutoDeploy
         public string TargetDirectory { get; set; }
 
         public List<ProjectConfiguration> Projects { get; private set; } = new List<ProjectConfiguration>();
-
-        public Dictionary<string, DateTime> FilesCache { get; private set; } = new Dictionary<string, DateTime>();
-
+        
         
         public static void Save(SolutionConfiguration configuration, Stream stream)
         {

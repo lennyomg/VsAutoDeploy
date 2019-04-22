@@ -173,7 +173,7 @@ namespace VsAutoDeploy
             targetDirectory = Environment.ExpandEnvironmentVariables(targetDirectory);
 
             var project = dte.Solution.GetProjects().FirstOrDefault(p => p.UniqueName == projectConfiguration.ProjectName);
-
+            
             var outputPath = (string)project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value;
             var sourceDirectory = Path.Combine(Path.GetDirectoryName(project.FullName), outputPath);
 
@@ -205,16 +205,7 @@ namespace VsAutoDeploy
 
                     try
                     {
-                        var fileInfo = new FileInfo(sourceFileName);
-
-                        if (currentBuildAction == vsBuildAction.vsBuildActionBuild)
-                        {
-                            DateTime lastDate;
-                            if (configuration.FilesCache.TryGetValue(fileInfo.Name, out lastDate) && fileInfo.LastWriteTime == lastDate)
-                                continue;
-                        }
-
-                        var destFileName = Path.Combine(targetDirectory, sourceFileName.Substring(sourceDirectory.Length));
+                        var destFileName = Path.Combine(targetDirectory, sourceFileName.Substring(sourceDirectory.Length).Trim('\\', '/'));
                         Write(sourceFileName + " -> ");
 
                         statusBar.Progress(ref cookie, 1, "", i, (uint)files.Length);
@@ -224,7 +215,6 @@ namespace VsAutoDeploy
                             Directory.CreateDirectory(destPath);
 
                         File.Copy(sourceFileName, destFileName, true);
-                        configuration.FilesCache[fileInfo.Name] = fileInfo.LastWriteTime;
 
                         WriteLine(destFileName);
                     }
