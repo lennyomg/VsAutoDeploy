@@ -173,9 +173,7 @@ namespace VsAutoDeploy
             targetDirectory = Environment.ExpandEnvironmentVariables(targetDirectory);
 
             var project = dte.Solution.GetProjects().FirstOrDefault(p => p.UniqueName == projectConfiguration.ProjectName);
-            
-            var outputPath = (string)project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value;
-            var sourceDirectory = Path.Combine(Path.GetDirectoryName(project.FullName), outputPath);
+            var sourceDirectory = project.GetFullOutputPath();
 
             var statusBar = (IVsStatusbar)GetService(typeof(SVsStatusbar));
             uint cookie = 0;

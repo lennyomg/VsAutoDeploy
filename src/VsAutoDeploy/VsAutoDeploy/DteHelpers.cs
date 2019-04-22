@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using EnvDTE;
 
@@ -56,6 +58,20 @@ namespace EnvDTE80
             }
 
             return result;
+        }
+
+        public static string GetFullOutputPath(this Project project)
+        {
+            if (Path.GetExtension(project.FullName).Equals(".csproj", StringComparison.OrdinalIgnoreCase))
+            {
+                return Path.Combine(Path.GetDirectoryName(project.FullName), (string)project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value);
+            }
+            else
+            {
+                var outputUrlStr = ((object[])project.ConfigurationManager.ActiveConfiguration.OutputGroups.Item("Built").FileURLs).OfType<string>().First();
+                var outputUrl = new Uri(outputUrlStr, UriKind.Absolute);
+                return Path.GetDirectoryName(outputUrl.LocalPath);
+            }
         }
     }
 }

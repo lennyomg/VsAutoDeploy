@@ -334,7 +334,7 @@ namespace VsAutoDeploy
                 Project = project;
                 Name = Path.GetFileNameWithoutExtension(project.UniqueName);
                 FolderName = Path.GetDirectoryName(project.UniqueName);
-                OutputFullPath = Path.Combine(Path.GetDirectoryName(project.FullName), (string)project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value); ;
+                OutputFullPath = project.GetFullOutputPath();
                 Files = new ObservableCollection<ProjectFileViewModel>(files.Select(p => new ProjectFileViewModel(p)).ToList());
             }
         }
