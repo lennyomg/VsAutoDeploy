@@ -50,15 +50,22 @@
                     Loaded="ListBox_Loaded">
                 <ListBox.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Enable selected" Click="EnableMenuItem_Click" />
-                        <MenuItem Header="Disable selected" Click="DisableMenuItem_Click" />
+                        <MenuItem Header="Add output" Click="AddOutputExeDllMenuItem_Click" />
+                        <MenuItem Header="Add pdb" Click="AddOutputPdbMenuItem_Click" />
+                        <MenuItem Header="Add more">
+                            <MenuItem Header="*.exe" Click="AddOutputByPatternConfigMenuItem_Click" />
+                            <MenuItem Header="*.dll" Click="AddOutputByPatternConfigMenuItem_Click" />
+                            <MenuItem Header="*.pdb" Click="AddOutputByPatternConfigMenuItem_Click" />
+                            <MenuItem Header="*.config" Click="AddOutputByPatternConfigMenuItem_Click" />
+                            <MenuItem Header="*" Click="AddOutputByPatternConfigMenuItem_Click" />
+                        </MenuItem>
+                        <MenuItem Header="Remove all" Click="ClearFilesMenuItem_Click" />
+                        <Separator />
+                        <MenuItem Header="Enable" Click="EnableMenuItem_Click" />
+                        <MenuItem Header="Disable" Click="DisableMenuItem_Click" />
                         <Separator />
                         <MenuItem Header="Include sub directories" Click="IncludeSubDirectoriesMenuItem_Click" />
                         <MenuItem Header="Don't include sub directories" Click="DontIncludeSubDirectoriesMenuItem_Click" />
-                        <Separator />
-                        <MenuItem Header="Add output file" Click="AddOutputExeDllMenuItem_Click" />
-                        <MenuItem Header="Add pdb file" Click="AddOutputPdbMenuItem_Click" />
-                        <MenuItem Header="Remove all files" Click="ClearFilesMenuItem_Click" />
                         <Separator />
                         <MenuItem Header="Clear target directory" Click="ClearTargetDirectoryMenuItem_Click" />
                     </ContextMenu>

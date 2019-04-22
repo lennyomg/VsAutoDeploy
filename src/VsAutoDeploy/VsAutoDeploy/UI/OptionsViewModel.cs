@@ -198,6 +198,17 @@ namespace VsAutoDeploy
             }
         }
 
+        public void AddOutputByPattern(string searchPattern)
+        {
+            foreach (var item in SelectedProjects)
+            {
+                if (item.Files.Any(p => String.Equals(p.FileName, searchPattern, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
+                item.Files.Add(new ProjectFileViewModel(searchPattern));
+            }
+        }
+
         public void ClearFiles()
         {
             foreach (var projectViewModel in SelectedProjects)

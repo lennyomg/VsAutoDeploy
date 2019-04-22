@@ -57,7 +57,7 @@ namespace VsAutoDeploy
             if (dialog.ShowDialog() == true)
                 textBox.Text = dialog.SelectedPath;
         }
-        
+
         private void OutputFilesComboBox_Loaded(object sender, RoutedEventArgs e)
         {
             var comboBox = (ComboBox)sender;
@@ -133,11 +133,16 @@ namespace VsAutoDeploy
             viewModel.AddOutput(".pdb");
         }
 
+        private void AddOutputByPatternConfigMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            viewModel.AddOutputByPattern(((MenuItem)sender).Header.ToString());
+        }
+
         private void ClearFilesMenuItem_Click(object sender, RoutedEventArgs e)
         {
             viewModel.ClearFiles();
         }
-        
+
         private void ClearTargetDirectoryMenuItem_Click(object sender, RoutedEventArgs e)
         {
             viewModel.ClearTargetDirectory();
