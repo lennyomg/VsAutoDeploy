@@ -66,7 +66,7 @@ namespace EnvDTE80
             {
                 return Path.Combine(Path.GetDirectoryName(project.FullName), (string)project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value);
             }
-            elseif (Path.GetExtension(project.FullName).Equals(".csproj", StringComparison.OrdinalIgnoreCase))
+            elseif (Path.GetExtension(project.FullName).Equals(".vbproj", StringComparison.OrdinalIgnoreCase))
             {
                 return Path.Combine(Path.GetDirectoryName(project.FullName), (string)project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value);
             }
