@@ -1,3 +1,5 @@
+DEPRECATED. See [PsBuild](https://github.com/lennyomg/PsBuild)
+
 # Auto Deploy
 Visual Studio extension. Copy files from output directory to specified directory after each build.
 
